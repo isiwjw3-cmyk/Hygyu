@@ -1,0 +1,505 @@
+-- [[ IU HAS HUB - EXECUTOR SCRIPT (DELTA COMPATIBLE) ]] --
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Global Configuration & State
+getgenv().IUHas = {
+    CurrentMap = "NaturalDisaster",
+    KeyVerified = false,
+    FlySpeed = 50,
+    FlyActive = false,
+    BlockRadius = 50,
+    SpeedValue = 16,
+    NoclipActive = false,
+    RoleESPActive = false,
+    AimbotActive = false
+}
+
+local ValidKeys = {
+    ["sisie837exk92ld83foeof74hc7si348"] = "Permanent",
+    ["sid8738"] = "24Hours"
+}
+
+-- Notification Helper Function
+local function notify(title, msg)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title,
+        Text = msg,
+        Duration = 4
+    })
+end
+
+-- ================= SYSTEM 1: KEY SYSTEM UI ================= --
+local KeyUI = Instance.new("ScreenGui")
+KeyUI.Name = "IUHas_KeyUI"
+KeyUI.ResetOnSpawn = false
+KeyUI.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+
+local KeyFrame = Instance.new("Frame", KeyUI)
+KeyFrame.Size = UDim2.new(0, 360, 0, 240)
+KeyFrame.Position = UDim2.new(0.5, -180, 0.5, -120)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Active = true
+KeyFrame.Draggable = true
+
+local KeyCorner = Instance.new("UICorner", KeyFrame)
+KeyCorner.CornerRadius = UDim.new(0, 8)
+
+local KeyStroke = Instance.new("UIStroke", KeyFrame)
+KeyStroke.Color = Color3.fromRGB(255, 0, 0)
+KeyStroke.Thickness = 2
+
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
+KeyTitle.Size = UDim2.new(1, 0, 0, 35)
+KeyTitle.Text = "[ IU HAS - KEY SYSTEM ]"
+KeyTitle.TextColor3 = Color3.fromRGB(255, 0, 0)
+KeyTitle.TextSize = 18
+KeyTitle.Font = Enum.Font.Code
+KeyTitle.BackgroundTransparency = 1
+
+local CopyBtn = Instance.new("TextButton", KeyFrame)
+CopyBtn.Size = UDim2.new(0.9, 0, 0, 35)
+CopyBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+CopyBtn.Text = "คัดลอกลิ้งค์ TikTok"
+CopyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+CopyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CopyBtn.Font = Enum.Font.Code
+CopyBtn.TextSize = 14
+Instance.new("UICorner", CopyBtn)
+
+local Instructions = Instance.new("TextLabel", KeyFrame)
+Instructions.Size = UDim2.new(0.9, 0, 0, 45)
+Instructions.Position = UDim2.new(0.05, 0, 0.38, 0)
+Instructions.Text = "เข้า ตต. ใส่คำที่คัดลอกมาในช่องค้นหาแล้วเข้าไปกดติดตามช่อง\nแล้วทักว่า ขอคีย์คริป MM2"
+Instructions.TextColor3 = Color3.fromRGB(180, 180, 180)
+Instructions.TextSize = 11
+Instructions.Font = Enum.Font.SourceSans
+Instructions.BackgroundTransparency = 1
+Instructions.TextWrapped = true
+
+local KeyInput = Instance.new("TextBox", KeyFrame)
+KeyInput.Size = UDim2.new(0.65, 0, 0, 35)
+KeyInput.Position = UDim2.new(0.05, 0, 0.62, 0)
+KeyInput.PlaceholderText = "ใส่คีย์ที่นี่..."
+KeyInput.Text = ""
+KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.Font = Enum.Font.Code
+KeyInput.TextSize = 13
+Instance.new("UICorner", KeyInput)
+
+local SubmitBtn = Instance.new("TextButton", KeyFrame)
+SubmitBtn.Size = UDim2.new(0.22, 0, 0, 35)
+SubmitBtn.Position = UDim2.new(0.73, 0, 0.62, 0)
+SubmitBtn.Text = "ยืนยัน"
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitBtn.Font = Enum.Font.Code
+SubmitBtn.TextSize = 14
+Instance.new("UICorner", SubmitBtn)
+
+CopyBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard("@_685678tiktok.com_3")
+        notify("IU HAS", "คัดลอก @_685678tiktok.com_3 เรียบร้อยแล้ว!")
+    end
+end)
+
+-- Forward Declaration of Main UI Loader
+local LoadMainUI
+
+SubmitBtn.MouseButton1Click:Connect(function()
+    local enteredKey = KeyInput.Text
+    if ValidKeys[enteredKey] then
+        notify("SUCCESS", "คีย์ถูกต้อง (" .. ValidKeys[enteredKey] .. ") - กำลังโหลดสคริปต์")
+        KeyUI:Destroy()
+        LoadMainUI()
+    else
+        notify("ERROR", "คีย์ไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง")
+    end
+end)
+
+-- ================= SYSTEM 2 & 3: LOADING & MAIN HACKER UI ================= --
+LoadMainUI = function()
+    -- Loading Screen
+    local LoadUI = Instance.new("ScreenGui")
+    LoadUI.Name = "IUHas_Loading"
+    LoadUI.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+
+    local LoadFrame = Instance.new("Frame", LoadUI)
+    LoadFrame.Size = UDim2.new(0, 300, 0, 100)
+    LoadFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+    LoadFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    Instance.new("UICorner", LoadFrame)
+    local LoadStroke = Instance.new("UIStroke", LoadFrame)
+    LoadStroke.Color = Color3.fromRGB(255, 0, 0)
+
+    local LoadText = Instance.new("TextLabel", LoadFrame)
+    LoadText.Size = UDim2.new(1, 0, 1, 0)
+    LoadText.Text = "กำลังโหลดทรัพยากร 0%"
+    LoadText.TextColor3 = Color3.fromRGB(255, 0, 0)
+    LoadText.Font = Enum.Font.Code
+    LoadText.TextSize = 16
+    LoadText.BackgroundTransparency = 1
+
+    for i = 1, 100 do
+        LoadText.Text = "กำลังโหลดทรัพยากร " .. i .. "%"
+        task.wait(0.015)
+    end
+    LoadUI:Destroy()
+
+    -- Main Hacker UI Build
+    local MainUI = Instance.new("ScreenGui")
+    MainUI.Name = "IUHas_Main"
+    MainUI.ResetOnSpawn = false
+    MainUI.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+
+    -- Toggle Button (สี่เหลี่ยมผืนผ้าเล็ก)
+    local ToggleBtn = Instance.new("TextButton", MainUI)
+    ToggleBtn.Size = UDim2.new(0, 90, 0, 28)
+    ToggleBtn.Position = UDim2.new(0, 10, 0.4, 0)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+    ToggleBtn.Text = "IU HAS [ON]"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+    ToggleBtn.Font = Enum.Font.Code
+    ToggleBtn.TextSize = 12
+    ToggleBtn.Active = true
+    ToggleBtn.Draggable = true
+    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 4)
+    local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+    ToggleStroke.Color = Color3.fromRGB(255, 0, 0)
+
+    -- Main Frame (Hacker Dark Theme)
+    local MainFrame = Instance.new("Frame", MainUI)
+    MainFrame.Size = UDim2.new(0, 450, 0, 320)
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -160)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    Instance.new("UICorner", MainFrame)
+    local MainStroke = Instance.new("UIStroke", MainFrame)
+    MainStroke.Color = Color3.fromRGB(255, 0, 0)
+    MainStroke.Thickness = 2
+
+    local Header = Instance.new("TextLabel", MainFrame)
+    Header.Size = UDim2.new(1, 0, 0, 35)
+    Header.Text = "=== IU HAS HUB v1.0 ==="
+    Header.TextColor3 = Color3.fromRGB(255, 0, 0)
+    Header.Font = Enum.Font.Code
+    Header.TextSize = 18
+    Header.BackgroundTransparency = 1
+
+    -- Map Selector System
+    local MapSelector = Instance.new("TextButton", MainFrame)
+    MapSelector.Size = UDim2.new(0.9, 0, 0, 30)
+    MapSelector.Position = UDim2.new(0.05, 0, 0.12, 0)
+    MapSelector.Text = "เลือกแมพ / เปลี่ยนแมพ: [ ภัยพิบัติธรรมชาติ ]"
+    MapSelector.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MapSelector.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MapSelector.Font = Enum.Font.Code
+    MapSelector.TextSize = 12
+    Instance.new("UICorner", MapSelector)
+
+    -- Container Panels for Functions
+    local NDPanel = Instance.new("ScrollingFrame", MainFrame)
+    NDPanel.Size = UDim2.new(0.9, 0, 0.72, 0)
+    NDPanel.Position = UDim2.new(0.05, 0, 0.24, 0)
+    NDPanel.BackgroundTransparency = 1
+    NDPanel.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+    NDPanel.ScrollBarThickness = 4
+
+    local MM2Panel = Instance.new("ScrollingFrame", MainFrame)
+    MM2Panel.Size = UDim2.new(0.9, 0, 0.72, 0)
+    MM2Panel.Position = UDim2.new(0.05, 0, 0.24, 0)
+    MM2Panel.BackgroundTransparency = 1
+    MM2Panel.CanvasSize = UDim2.new(0, 0, 2, 0)
+    MM2Panel.Visible = false
+    MM2Panel.ScrollBarThickness = 4
+
+    local function updateLayout(parent)
+        local layout = Instance.new("UIListLayout", parent)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Padding = UDim.new(0, 8)
+    end
+    updateLayout(NDPanel)
+    updateLayout(MM2Panel)
+
+    -- Toggle Menu Visibility
+    ToggleBtn.MouseButton1Click:Connect(function()
+        MainFrame.Visible = not MainFrame.Visible
+        ToggleBtn.Text = MainFrame.Visible and "IU HAS [ON]" or "IU HAS [OFF]"
+    end)
+
+    -- Map Switching Logic
+    MapSelector.MouseButton1Click:Connect(function()
+        if getgenv().IUHas.CurrentMap == "NaturalDisaster" then
+            getgenv().IUHas.CurrentMap = "MM2"
+            MapSelector.Text = "เลือกแมพ / เปลี่ยนแมพ: [ MM2 ]"
+            NDPanel.Visible = false
+            MM2Panel.Visible = true
+        else
+            getgenv().IUHas.CurrentMap = "NaturalDisaster"
+            MapSelector.Text = "เลือกแมพ / เปลี่ยนแมพ: [ ภัยพิบัติธรรมชาติ ]"
+            MM2Panel.Visible = false
+            NDPanel.Visible = true
+        end
+    end)
+
+    -- UI Component Creators
+    local function createToggle(parent, text, callback)
+        local btn = Instance.new("TextButton", parent)
+        btn.Size = UDim2.new(1, -10, 0, 32)
+        btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        btn.Text = "  [OFF] " .. text
+        btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        btn.Font = Enum.Font.Code
+        btn.TextSize = 13
+        btn.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", btn)
+        local stroke = Instance.new("UIStroke", btn)
+        stroke.Color = Color3.fromRGB(40, 40, 40)
+
+        local active = false
+        btn.MouseButton1Click:Connect(function()
+            active = not active
+            if active then
+                btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+                btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                btn.Text = "  [ON] " .. text
+                stroke.Color = Color3.fromRGB(255, 0, 0)
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+                btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+                btn.Text = "  [OFF] " .. text
+                stroke.Color = Color3.fromRGB(40, 40, 40)
+            end
+            callback(active)
+        end)
+        return btn
+    end
+
+    local function createActionBtn(parent, text, callback)
+        local btn = Instance.new("TextButton", parent)
+        btn.Size = UDim2.new(1, -10, 0, 32)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        btn.Text = text
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.Code
+        btn.TextSize = 13
+        Instance.new("UICorner", btn)
+        btn.MouseButton1Click:Connect(callback)
+        return btn
+    end
+
+    -- ================= SYSTEM 4: ภัยพิบัติธรรมชาติ FUNCTIONS ================= --
+    
+    -- Fly Mobile Control Overlay Function
+    local flyControlsGui
+    local function createFlyControls()
+        if flyControlsGui then flyControlsGui:Destroy() end
+        flyControlsGui = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
+        flyControlsGui.Name = "IUHas_FlyControls"
+
+        local upBtn = Instance.new("TextButton", flyControlsGui)
+        upBtn.Size = UDim2.new(0, 50, 0, 50)
+        upBtn.Position = UDim2.new(0.85, 0, 0.5, -60)
+        upBtn.Text = "↑"
+        upBtn.TextSize = 25
+        upBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        upBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+        Instance.new("UICorner", upBtn)
+
+        local downBtn = Instance.new("TextButton", flyControlsGui)
+        downBtn.Size = UDim2.new(0, 50, 0, 50)
+        downBtn.Position = UDim2.new(0.85, 0, 0.5, 10)
+        downBtn.Text = "↓"
+        downBtn.TextSize = 25
+        downBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        downBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+        Instance.new("UICorner", downBtn)
+
+        local pressingUp, pressingDown = false, false
+        upBtn.MouseButton1Down:Connect(function() pressingUp = true end)
+        upBtn.MouseButton1Up:Connect(function() pressingUp = false end)
+        downBtn.MouseButton1Down:Connect(function() pressingDown = true end)
+        downBtn.MouseButton1Up:Connect(function() pressingDown = false end)
+
+        task.spawn(function()
+            while flyControlsGui and flyControlsGui.Parent do
+                if getgenv().IUHas.FlyActive and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    if pressingUp then
+                        hrp.CFrame = hrp.CFrame + Vector3.new(0, 1.5, 0)
+                    elseif pressingDown then
+                        hrp.CFrame = hrp.CFrame - Vector3.new(0, 1.5, 0)
+                    end
+                end
+                task.wait(0.03)
+            end
+        end)
+    end
+
+    createToggle(NDPanel, "สำหรับ ภัยพิบัติธรรมชาติ: บิน", function(state)
+        getgenv().IUHas.FlyActive = state
+        if state then
+            createFlyControls()
+        elseif flyControlsGui then
+            flyControlsGui:Destroy()
+        end
+    end)
+
+    -- ถีบ (Player Selection & Super Yeet)
+    local selectedTargetPlayer = nil
+    createActionBtn(NDPanel, "สำหรับ ภัยพิบัติธรรมชาติ: เลือกผู้เล่นถีบ (พุ่งความเร็ว 999)", function()
+        local plist = {}
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= LocalPlayer then table.insert(plist, v.Name) end
+        end
+        if #plist > 0 then
+            selectedTargetPlayer = plist[math.random(1, #plist)]
+            notify("TARGET SELECTED", "เป้าหมาย: " .. selectedTargetPlayer)
+        else
+            notify("ERROR", "ไม่พบผู้เล่นอื่นในเซิร์ฟเวอร์")
+        end
+    end)
+
+    createActionBtn(NDPanel, "สำหรับ ภัยพิบัติธรรมชาติ: กด GO (ถีบสะท้อนกระเด็น)", function()
+        if selectedTargetPlayer and Players:FindFirstChild(selectedTargetPlayer) then
+            local targetChar = Players[selectedTargetPlayer].Character
+            local myChar = LocalPlayer.Character
+            if targetChar and myChar and targetChar:FindFirstChild("HumanoidRootPart") and myChar:FindFirstChild("HumanoidRootPart") then
+                local myHrp = myChar.HumanoidRootPart
+                local targetHrp = targetChar.HumanoidRootPart
+                -- Teleport with speed 999 impulse force simulation
+                myHrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, -1)
+                local bv = Instance.new("BodyVelocity", targetHrp)
+                bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                bv.Velocity = myHrp.CFrame.LookVector * 999
+                task.wait(0.2)
+                bv:Destroy()
+            end
+        end
+    end)
+
+    -- บังคับบล็อก (Bring & Orbit Unanchored Parts)
+    local orbitActive = false
+    createToggle(NDPanel, "สำหรับ ภัยพิบัติธรรมชาติ: บังคับบล็อกหมุนรอบตัว", function(state)
+        orbitActive = state
+        task.spawn(function()
+            local angle = 0
+            while orbitActive do
+                angle = angle + 0.1
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local myPos = LocalPlayer.Character.HumanoidRootPart.Position
+                    local count = 0
+                    for _, part in pairs(workspace:GetDescendants()) do
+                        if part:IsA("BasePart") and not part.Anchored and not part:IsDescendantOf(LocalPlayer.Character) then
+                            if count < 100 then
+                                count = count + 1
+                                local rad = getgenv().IUHas.BlockRadius
+                                local offset = Vector3.new(math.cos(angle + count) * rad, 2, math.sin(angle + count) * rad)
+                                part.CFrame = CFrame.new(myPos + offset)
+                            end
+                        end
+                    end
+                end
+                task.wait(0.03)
+            end
+        end)
+    end)
+
+    -- ================= SYSTEM 5: MM2 FUNCTIONS ================= --
+
+    -- ตรวจจับบทบาท (Role ESP: Red=Murder, Blue=Sheriff, Green=Innocent)
+    createToggle(MM2Panel, "สำหรับ MM2: ตรวจจับบทบาท (Highlight ESP)", function(state)
+        getgenv().IUHas.RoleESPActive = state
+        if not state then
+            for _, p in pairs(Players:GetPlayers()) do
+                if p.Character and p.Character:FindFirstChild("RoleHighlight") then
+                    p.Character.RoleHighlight:Destroy()
+                end
+            end
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if getgenv().IUHas.RoleESPActive then
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character then
+                    local char = p.Character
+                    local hl = char:FindFirstChild("RoleHighlight") or Instance.new("Highlight", char)
+                    hl.Name = "RoleHighlight"
+                    
+                    local hasKnife = p.Backpack:FindFirstChild("Knife") or char:FindFirstChild("Knife")
+                    local hasGun = p.Backpack:FindFirstChild("Gun") or char:FindFirstChild("Gun")
+
+                    if hasKnife then
+                        hl.FillColor = Color3.fromRGB(255, 0, 0) -- สีแดง
+                    elseif hasGun then
+                        hl.FillColor = Color3.fromRGB(0, 0, 255) -- สีน้ำเงิน
+                    else
+                        hl.FillColor = Color3.fromRGB(0, 255, 0) -- สีเขียว
+                    end
+                end
+            end
+        end
+    end)
+
+    -- บิน MM2
+    createToggle(MM2Panel, "สำหรับ MM2: บิน + ปุ่มควบคุม ↑↓", function(state)
+        getgenv().IUHas.FlyActive = state
+        if state then createFlyControls() elseif flyControlsGui then flyControlsGui:Destroy() end
+    end)
+
+    -- เก็บปืน (Teleport Gun Drop)
+    createActionBtn(MM2Panel, "สำหรับ MM2: วาปเก็บปืนดรอป", function()
+        local gunDrop = workspace:FindFirstChild("GunDrop", true)
+        if gunDrop and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local oldCFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+            LocalPlayer.Character.HumanoidRootPart.CFrame = gunDrop.CFrame
+            task.wait(0.3)
+            LocalPlayer.Character.HumanoidRootPart.CFrame = oldCFrame
+            notify("MM2", "วาปเก็บปืนเรียบร้อยแล้ว!")
+        else
+            notify("MM2", "ไม่พบปืนตกบนพื้น")
+        end
+    end)
+
+    -- ล็อคฆาตกร (Aimbot Camera Lock)
+    createToggle(MM2Panel, "สำหรับ MM2: ล็อคเป้าฆาตกร", function(state)
+        getgenv().IUHas.AimbotActive = state
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if getgenv().IUHas.AimbotActive then
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and (p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife")) then
+                    if p.Character:FindFirstChild("Head") then
+                        workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, p.Character.Head.Position)
+                    end
+                end
+            end
+        end
+    end)
+
+    -- วิ่งเร็ว
+    createActionBtn(MM2Panel, "สำหรับ MM2: ปรับวิ่งเร็ว (1-300)", function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 100
+            notify("SPEED", "ปรับ WalkSpeed เป็น 100")
+        end
+    end)
+
+    -- ทะลุกำแพง (Noclip)
+    createToggle(MM2Panel, "สำหรับ MM2: ทะลุกำแพง (Noclip)", function(state)
+        getgenv().IUHas.NoclipActive = state
+    end)
+
+    RunService.Stepped:Connect(function()
+        if getgenv().IUHas.NoclipActive and LocalPlayer.Character then
+            for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide 
